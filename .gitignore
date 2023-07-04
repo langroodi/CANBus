@@ -50,3 +50,8 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Folders
+/ri5cy/riscveclipse/debug/*
+/ri5cy/riscveclipse/.settings/*
+/ri5cy/riscveclipse/settings/*
