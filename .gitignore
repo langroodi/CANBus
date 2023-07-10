@@ -55,3 +55,4 @@ dkms.conf
 /ri5cy/riscveclipse/debug/*
 /ri5cy/riscveclipse/.settings/*
 /ri5cy/riscveclipse/settings/*
+.vscode/*
