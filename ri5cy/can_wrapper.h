@@ -105,13 +105,13 @@ bool SendExtendedFrame(
 //!----------------------------------------------------------------------------
 
 //! \fn Receive Standard Frame
-int ReceiveStandardFrame(
+bool ReceiveStandardFrame(
 		StandardFrame_t* frame /*!< [out] Received Standard Frame */,
 		ByteArray data /*!< [out] Frame Data Pointer */,
 		RXB_t rxb /*!< [in] Rx Buffer used for Receiving */);
 
 //! \fn Receive Extended Frame
-int ReceiveExtendedFrame(
+bool ReceiveExtendedFrame(
 		ExtendedFrame_t* frame /*!< [out] Received Extended Frame */,
 		ByteArray data /*!< [out] Frame Data Pointer */,
 		RXB_t rxb /*!< [in] Rx Buffer used for Receiving */);
