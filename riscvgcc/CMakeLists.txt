@@ -66,6 +66,8 @@ SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DDEBUG")
 
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DCPU_RV32M1_ri5cy")
 
+SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DFSL_RTOS_FREE_RTOS")
+
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g")
 
 SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
@@ -93,6 +95,8 @@ SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -std=gnu99")
 SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DNDEBUG")
 
 SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DCPU_RV32M1_ri5cy")
+
+SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DFSL_RTOS_FREE_RTOS")
 
 SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2")
 
@@ -238,65 +242,97 @@ SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} muldefs")
 
 SET(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -nostdlib")
 
-include_directories(${ProjDirPath}/../../../../../../../../RISCV)
-
-include_directories(${ProjDirPath}/../../../../../../../../devices)
-
 include_directories(${ProjDirPath}/../..)
 
-include_directories(${ProjDirPath}/../../../../../..)
+include_directories(${ProjDirPath}/../../../..)
 
-include_directories(${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers)
-
-include_directories(${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities)
-
-include_directories(${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/io)
-
-include_directories(${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/str)
-
-include_directories(${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/log)
-
-include_directories(${ProjDirPath}/../../../../../../../../devices/RV32M1)
+include_directories(${ProjDirPath}/../../../../freertos_config_board/ri5cy)
 
 include_directories(${ProjDirPath}/..)
 
-add_executable(lpspi_edma_b2b_transfer_master.elf 
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/gcc/startup_RV32M1_ri5cy.S"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_lpuart.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_lpuart.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_gpio.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_gpio.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_port.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_lpspi.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_lpspi.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_lpspi_edma.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_lpspi_edma.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_edma.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_edma.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_dmamux.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_dmamux.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_common.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_common.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/fsl_debug_console.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/fsl_debug_console.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/fsl_debug_console_conf.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/fsl_io.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/fsl_io.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/fsl_log.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/fsl_log.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/fsl_str.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/utilities/fsl_str.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/system_RV32M1_ri5cy.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/system_RV32M1_ri5cy.h"
+include_directories(${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/portable/GCC/RISCY)
+
+include_directories(${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include)
+
+include_directories(${ProjDirPath}/../../../../../../RISCV)
+
+include_directories(${ProjDirPath}/../../../../../../devices)
+
+include_directories(${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source)
+
+include_directories(${ProjDirPath}/../../../../../../devices/RV32M1/drivers)
+
+include_directories(${ProjDirPath}/../../../../../../devices/RV32M1/utilities)
+
+include_directories(${ProjDirPath}/../../../../../../devices/RV32M1/utilities/io)
+
+include_directories(${ProjDirPath}/../../../../../../devices/RV32M1/utilities/str)
+
+include_directories(${ProjDirPath}/../../../../../../devices/RV32M1/utilities/log)
+
+include_directories(${ProjDirPath}/../../../../../../devices/RV32M1)
+
+add_executable(freertos_lpspi.elf 
+"${ProjDirPath}/../../../../../../devices/RV32M1/gcc/startup_RV32M1_ri5cy.S"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/portable/GCC/RISCY/port.c"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/portable/GCC/RISCY/portASM.S"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/portable/GCC/RISCY/fsl_tickless_generic.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/portable/GCC/RISCY/portmacro.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_intmux.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_intmux.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_lpuart.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_lpuart.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_gpio.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_gpio.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_port.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_clock.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_clock.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_lpspi.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_lpspi.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_lpspi_freertos.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_lpspi_freertos.c"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/portable/MemMang/heap_4.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_common.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_common.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/utilities/fsl_debug_console.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/utilities/fsl_debug_console.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/utilities/fsl_debug_console_conf.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/utilities/fsl_io.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/utilities/fsl_io.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/utilities/fsl_log.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/utilities/fsl_log.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/utilities/fsl_str.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/utilities/fsl_str.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/system_RV32M1_ri5cy.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/system_RV32M1_ri5cy.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/croutine.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/event_groups.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/FreeRTOS.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/list.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/mpu_wrappers.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/portable.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/projdefs.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/queue.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/semphr.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/StackMacros.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/task.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/timers.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/deprecated_definitions.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/include/freertos_tasks_c_additions.h"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/croutine.c"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/list.c"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/queue.c"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/tasks.c"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/timers.c"
+"${ProjDirPath}/../../../../../../rtos/freertos_9.0.0/Source/event_groups.c"
 "${ProjDirPath}/../board.c"
 "${ProjDirPath}/../board.h"
 "${ProjDirPath}/../clock_config.c"
 "${ProjDirPath}/../clock_config.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_msmc.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_msmc.c"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_clock.h"
-"${ProjDirPath}/../../../../../../../../devices/RV32M1/drivers/fsl_clock.c"
-"${ProjDirPath}/../lpspi_edma_b2b_transfer_master.c"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_msmc.h"
+"${ProjDirPath}/../../../../../../devices/RV32M1/drivers/fsl_msmc.c"
+"${ProjDirPath}/../FreeRTOSConfig.h"
+"${ProjDirPath}/../freertos_lpspi.c"
 "${ProjDirPath}/../../pin_mux.c"
 "${ProjDirPath}/../../pin_mux.h"
 )
@@ -306,22 +342,22 @@ set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -T${ProjDirPat
 
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -T${ProjDirPath}/RV32M1_ri5cy_flash.ld -static")
 
-TARGET_LINK_LIBRARIES(lpspi_edma_b2b_transfer_master.elf -Wl,--start-group)
-target_link_libraries(lpspi_edma_b2b_transfer_master.elf debug m)
+TARGET_LINK_LIBRARIES(freertos_lpspi.elf -Wl,--start-group)
+target_link_libraries(freertos_lpspi.elf debug m)
 
-target_link_libraries(lpspi_edma_b2b_transfer_master.elf debug c)
+target_link_libraries(freertos_lpspi.elf debug c)
 
-target_link_libraries(lpspi_edma_b2b_transfer_master.elf debug gcc)
+target_link_libraries(freertos_lpspi.elf debug gcc)
 
-target_link_libraries(lpspi_edma_b2b_transfer_master.elf debug nosys)
+target_link_libraries(freertos_lpspi.elf debug nosys)
 
-target_link_libraries(lpspi_edma_b2b_transfer_master.elf optimized m)
+target_link_libraries(freertos_lpspi.elf optimized m)
 
-target_link_libraries(lpspi_edma_b2b_transfer_master.elf optimized c)
+target_link_libraries(freertos_lpspi.elf optimized c)
 
-target_link_libraries(lpspi_edma_b2b_transfer_master.elf optimized gcc)
+target_link_libraries(freertos_lpspi.elf optimized gcc)
 
-target_link_libraries(lpspi_edma_b2b_transfer_master.elf optimized nosys)
+target_link_libraries(freertos_lpspi.elf optimized nosys)
 
-TARGET_LINK_LIBRARIES(lpspi_edma_b2b_transfer_master.elf -Wl,--end-group)
+TARGET_LINK_LIBRARIES(freertos_lpspi.elf -Wl,--end-group)
 

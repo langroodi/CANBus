@@ -65,14 +65,9 @@ BOARD_InitPins:
  *
  *END**************************************************************************/
 void BOARD_InitPins(void) {
-  CLOCK_EnableClock(kCLOCK_PortA);                           /* Clock Gate Control: 0x01u */
   CLOCK_EnableClock(kCLOCK_PortB);                           /* Clock Gate Control: 0x01u */
   CLOCK_EnableClock(kCLOCK_PortC);                           /* Clock Gate Control: 0x01u */
 
-  PORT_SetPinMux(PORTA, PIN17_IDX, kPORT_MuxAlt3);           /* PORTA17 (pin F7) is configured as LPSPI3_PCS1 */
-  PORT_SetPinMux(PORTA, PIN19_IDX, kPORT_MuxAlt3);           /* PORTA19 (pin D7) is configured as LPSPI3_SCK */
-  PORT_SetPinMux(PORTA, PIN25_IDX, kPORT_MuxAlt3);           /* PORTA25 (pin B5) is configured as LPSPI3_SOUT */
-  PORT_SetPinMux(PORTA, PIN27_IDX, kPORT_MuxAlt3);           /* PORTA27 (pin A3) is configured as LPSPI3_SIN */
   PORT_SetPinMux(PORTB, PIN4_IDX, kPORT_MuxAlt2);            /* PORTB4 (pin C2) is configured as LPSPI0_SCK */
   PORT_SetPinMux(PORTB, PIN5_IDX, kPORT_MuxAlt2);            /* PORTB5 (pin D2) is configured as LPSPI0_SOUT */
   PORT_SetPinMux(PORTB, PIN6_IDX, kPORT_MuxAlt2);            /* PORTB6 (pin E1) is configured as LPSPI0_PCS2 */
