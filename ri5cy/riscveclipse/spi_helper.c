@@ -1,6 +1,6 @@
 #include "spi_helper.h"
 
-int Initialize(void)
+int Initialize_SPI(void)
 {
     // Set clock source for LPSPI and get master clock source
     CLOCK_SetIpSrc(LPSPI_MASTER_CLOCK_NAME, LPSPI_MASTER_CLOCK_SOURCE);
@@ -38,7 +38,7 @@ int Initialize(void)
     }
 }
 
-int Transfer(uint8_t* rx_buffer, uint8_t* tx_buffer, size_t buffer_size)
+int Transfer_SPI(uint8_t* rx_buffer, uint8_t* tx_buffer, size_t buffer_size)
 {
 	lpspi_transfer_t masterXfer;
 
@@ -59,7 +59,7 @@ int Transfer(uint8_t* rx_buffer, uint8_t* tx_buffer, size_t buffer_size)
     }
 }
 
-void Dispose(void)
+void Dispose_SPI(void)
 {
 	LPSPI_RTOS_Deinit(&master_rtos_handle);
 }

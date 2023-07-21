@@ -1,47 +1,83 @@
-/*
- * mcp2515.c
- *
- *  Created on: Jul 15, 2023
- *      Author: armin
- */
-
 #include "mcp2515.h"
 
-static size_t getRegister(Register_Address address, uint8_t* payload)
+int Initialize_CAN(void)
 {
-	payload[INSTRUCTION_OFFSET] = ReadInstruction;
-	payload[ADDRESS_OFFSET] = address;
+	int result = Initialize_SPI();
 
-	return READ_SIZE;
+	if (result == 0)
+	{
+		// It is recommended by Microchip Technology to reset the controller at the startup.
+		result = Reset_CAN();
+	}
+
+	return result;
 }
 
-static size_t setRegister(
-		Register_Address address,
-		Register_Mask mask,
-		uint8_t data,
-		uint8_t* payload)
+int Reset_CAN()
 {
+	uint8_t tx_buffer = kReset_Instruction;
+	int result = Transfer_SPI(NULL, &tx_buffer, RESET_SIZE);
+
+	return result;
+}
+
+static int try_Get_Register(register_address_t address, uint8_t* value)
+{
+	const size_t BUFFER_SIZE = READ_SIZE + BUFFER_OFFSET;
+
+	uint8_t rx_buffer[BUFFER_SIZE];
+
+	uint8_t tx_buffer[BUFFER_SIZE];
+	tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = kRead_Instruction;
+	tx_buffer[ADDRESS_OFFSET + BUFFER_OFFSET] = address;
+
+	int result = Transfer_SPI(OFFSET_PTR(rx_buffer), OFFSET_PTR(tx_buffer), BUFFER_SIZE);
+	if (result == 0)
+	{
+		*value = rx_buffer[DATA_RW_OFFSET + BUFFER_OFFSET];
+	}
+
+	return result;
+}
+
+int TryGet_CANMode(operation_mode_t* mode)
+{
+	uint8_t canstat;
+	int result = try_Get_Register(REGISTER_CANSTAT, &canstat);
+
+	if (result == 0)
+	{
+		canstat &= OPMODE_MASK;
+        *mode = (operation_mode_t)canstat;
+	}
+
+	return result;
+}
+
+static size_t set_Register(register_address_t address, register_mask_t mask, uint8_t data)
+{
+	const size_t BUFFER_SIZE = BITMODIFY_SIZE + BUFFER_OFFSET;
+
+	uint8_t rx_buffer[BUFFER_SIZE];
+
+	uint8_t tx_buffer[BUFFER_SIZE];
 	// [Instruction][Address Byte][Mask Byte][Data Byte]
-	payload[INSTRUCTION_OFFSET] = BitModifyInstruction;
-	payload[ADDRESS_OFFSET] = address;
-	payload[MASK_OFFSET] = mask;
-	payload[DATA_MOD_OFFSET] = data;
+	tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = kBitModify_Instruction;
+	tx_buffer[ADDRESS_OFFSET + BUFFER_OFFSET] = address;
+	tx_buffer[MASK_OFFSET + BUFFER_OFFSET] = mask;
+	tx_buffer[DATA_MOD_OFFSET + BUFFER_OFFSET] = data;
 
-	return BITMODIFY_SIZE;
+	int result = Transfer_SPI(OFFSET_PTR(rx_buffer), OFFSET_PTR(tx_buffer), BUFFER_SIZE);
+
+	return result;
 }
 
-size_t Reset(uint8_t* payload)
+int Set_CANMode(operation_mode_t mode)
 {
-	payload[INSTRUCTION_OFFSET] = ResetInstruction;
-	return RESET_SIZE;
+	return set_Register(REGISTER_CANCTRL, OPMODE_MASK, mode);
 }
 
-size_t GetMode(uint8_t* payload)
+void Dispose_CAN(void)
 {
-	return getRegister(REGISTER_CANSTAT, payload);
-}
-
-size_t SetMode(OperationMode mode, uint8_t* payload)
-{
-	return setRegister(REGISTER_CANCTRL, OPMODE_MASK, mode, payload);
+	Dispose_SPI();
 }

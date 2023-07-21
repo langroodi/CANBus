@@ -31,7 +31,7 @@ lpspi_master_config_t master_config;
 
 /// @brief Initialize the SPI
 /// @returns '0' if the initialization was successful; otherwise '-1'
-int Initialize(void);
+int Initialize_SPI(void);
 
 /// @brief Transfer data (read and write) via SPI
 /// @param[out] rx_buffer Receive buffer
@@ -39,9 +39,9 @@ int Initialize(void);
 /// @param buffer_size Minimum transmission buffer and receive buffer size
 /// @returns '0' if the transfer was successful; otherwise '-1'
 /// @note For read-only or write-only transmission, 'tx_buffer' or 'rx_buffer' can be 'NULL' respectively.
-int Transfer(uint8_t* rx_buffer, uint8_t* tx_buffer, size_t buffer_size);
+int Transfer_SPI(uint8_t* rx_buffer, uint8_t* tx_buffer, size_t buffer_size);
 
 /// @brief Dispose the SPI
-void Dispose(void);
+void Dispose_SPI(void);
 
 #endif
