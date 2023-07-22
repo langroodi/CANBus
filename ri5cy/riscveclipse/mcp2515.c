@@ -4,12 +4,6 @@ int Initialize_CAN(void)
 {
 	int result = Initialize_SPI();
 
-	if (result == 0)
-	{
-		// It is recommended by Microchip Technology to reset the controller at the startup.
-		result = Reset_CAN();
-	}
-
 	return result;
 }
 

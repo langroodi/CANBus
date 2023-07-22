@@ -58,6 +58,7 @@ int Initialize_CAN(void);
 
 /// @brief Reset the CAN controller
 /// @returns '0' if the reset was successful; otherwise '-1'
+/// @note It is recommended by Microchip Technology to reset the controller at the startup.
 int Reset_CAN();
 
 /// @brief Try to the CAN controller operation mode

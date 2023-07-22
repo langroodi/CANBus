@@ -31,6 +31,7 @@
  * Prototypes
  ******************************************************************************/
 
+static void reset_task(void *pvParameters);
 static void get_mode_task(void *pvParameters);
 
 /*******************************************************************************
@@ -58,16 +59,24 @@ int main(void)
     PRINTF("\r\n");
 
     int successful = Initialize_CAN();
-    if (successful == 0)
+    if (successful != 0)
     {
         PRINTF("LPSPI master: error during initialization. \r\n");
         vTaskSuspend(NULL);
     }
 
+    if (xTaskCreate(reset_task, "Reset task", configMINIMAL_STACK_SIZE + 64, NULL, master_task_PRIORITY, NULL) !=
+        pdPASS)
+    {
+        PRINTF("Reset Task creation failed!.\r\n");
+        while (1)
+            ;
+    }
+
     if (xTaskCreate(get_mode_task, "Get operation mode task", configMINIMAL_STACK_SIZE + 64, NULL, master_task_PRIORITY, NULL) !=
         pdPASS)
     {
-        PRINTF("Task creation failed!.\r\n");
+        PRINTF("Get operation mode task creation failed!.\r\n");
         while (1)
             ;
     }
@@ -76,6 +85,25 @@ int main(void)
 
     for (;;)
         ;
+}
+
+/*!
+ * @brief Task responsible for master SPI communication.
+ */
+static void reset_task(void *pvParameters)
+{
+	int successful = Reset_CAN();
+
+	if (successful == 0)
+	{
+	    PRINTF("Reseting LPSPI master completed successfully.\r\n");
+    }
+    else
+    {
+        PRINTF("Reseting LPSPI master completed with error.\r\n");
+    }
+
+    vTaskSuspend(NULL);
 }
 
 /*!
