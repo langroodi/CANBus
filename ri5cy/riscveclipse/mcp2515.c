@@ -1,4 +1,5 @@
 #include "mcp2515.h"
+#include "task.h"
 
 int Initialize_CAN(void)
 {
@@ -66,9 +67,48 @@ static size_t set_Register(register_address_t address, register_mask_t mask, uin
 	return result;
 }
 
-int Set_CANMode(operation_mode_t mode)
+int Set_CANMode(operation_mode_t mode, uint32_t interval, uint32_t timeout)
 {
-	return set_Register(REGISTER_CANCTRL, OPMODE_MASK, mode);
+	const int ARGUMENT_ERROR_CODE = -2;
+	const int VERIFICATION_ERROR_CODE = -3;
+
+	if (timeout < interval)
+	{
+		return ARGUMENT_ERROR_CODE;
+	}
+
+	int result = set_Register(REGISTER_CANCTRL, OPMODE_MASK, mode);
+
+	if (result != 0)
+	{
+		return result;
+	}
+
+	uint32_t elapsed_time = 0;
+
+	while (elapsed_time < timeout)
+	{
+		vTaskDelay(interval);
+		elapsed_time += interval;
+
+		operation_mode_t current_mode;
+		result = TryGet_CANMode(&current_mode);
+
+		if (result == 0 && current_mode == mode)
+		{
+			return result;
+		}
+	}
+
+	return VERIFICATION_ERROR_CODE;
+}
+
+int Set_CANMode_Defaults(operation_mode_t mode)
+{
+	const uint32_t DEFAULT_INTERVAL = 10;
+	const uint32_t DEFAULT_TIMEOUT = 100;
+
+	return Set_CANMode(mode, DEFAULT_INTERVAL, DEFAULT_TIMEOUT);
 }
 
 void Dispose_CAN(void)

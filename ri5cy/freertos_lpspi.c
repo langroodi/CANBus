@@ -32,6 +32,7 @@
  ******************************************************************************/
 
 static void reset_task(void *pvParameters);
+static void set_mode_task(void *pvParameters);
 static void get_mode_task(void *pvParameters);
 
 /*******************************************************************************
@@ -68,7 +69,15 @@ int main(void)
     if (xTaskCreate(reset_task, "Reset task", configMINIMAL_STACK_SIZE + 64, NULL, master_task_PRIORITY, NULL) !=
         pdPASS)
     {
-        PRINTF("Reset Task creation failed!.\r\n");
+        PRINTF("Reset task creation failed!.\r\n");
+        while (1)
+            ;
+    }
+
+    if (xTaskCreate(set_mode_task, "Set loopback mode task", configMINIMAL_STACK_SIZE + 128, NULL, master_task_PRIORITY, NULL) !=
+        pdPASS)
+    {
+        PRINTF("Set mode Task creation failed!.\r\n");
         while (1)
             ;
     }
@@ -87,9 +96,6 @@ int main(void)
         ;
 }
 
-/*!
- * @brief Task responsible for master SPI communication.
- */
 static void reset_task(void *pvParameters)
 {
 	int successful = Reset_CAN();
@@ -106,9 +112,23 @@ static void reset_task(void *pvParameters)
     vTaskSuspend(NULL);
 }
 
-/*!
- * @brief Task responsible for master SPI communication.
- */
+static void set_mode_task(void *pvParameters)
+{
+	const operation_mode_t REQUESTED_MODE = kLoopback;
+	int successful = Set_CANMode_Defaults(REQUESTED_MODE);
+
+	if (successful == 0)
+	{
+	    PRINTF("Setting mode completed successfully.\r\n");
+    }
+    else
+    {
+        PRINTF("Setting mode completed with error.\r\n");
+    }
+
+    vTaskSuspend(NULL);
+}
+
 static void get_mode_task(void *pvParameters)
 {
 	while (1)

@@ -69,8 +69,16 @@ int TryGet_CANMode(operation_mode_t* mode);
 
 /// @brief Set the CAN controller operation mode
 /// @param mode Mode to be set to the controller
-/// @returns '0' if the mode was set successfully; otherwise '-1'
-int Set_CANMode(operation_mode_t mode);
+/// @param interval Mode verification interval
+/// @param timeout Mode verification timeout
+/// @returns '0' if the mode was set successfully; otherwise a negative number
+int Set_CANMode(operation_mode_t mode, uint32_t interval, uint32_t timeout);
+
+/// @brief Set the CAN controller operation mode with default interval and timeout values
+/// @param mode Mode to be set to the controller
+/// @returns '0' if the mode was set successfully; otherwise a negative number
+/// @see Set_CANMode
+int Set_CANMode_Defaults(operation_mode_t mode);
 
 /// @brief Dispose the CAN controller
 void Dispose_CAN(void);
