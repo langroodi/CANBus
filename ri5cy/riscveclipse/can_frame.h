@@ -26,6 +26,10 @@
 #define EID_MIDDLE_BYTE_MASK (0xffU)
 /// @brief Extended ID low-byte mask
 #define EID_LOW_BYTE_MASK (EID_MIDDLE_BYTE_MASK)
+/// @brief Extended ID middle-byte offset
+#define EID_MIDDLE_BYTE_OFFSET (8)
+/// @brief Data length code mask
+#define DLC_MASK (0x0fU)
 
 /// @brief Standard ID high-byte array index
 #define SID_HIGH_BYTE_INDEX (0)
@@ -73,14 +77,16 @@ typedef struct can_frame
 /// @brief Serialize a CAN frame into byte array
 /// @param[in] frame CAN frame to be serialized
 /// @param[out] payload Serialized CAN frame payload
+/// @remarks No validation will be performed on the given frame.
 void Serialize_CAN_Frame(const can_frame_t* frame, uint8_t* payload);
 
 /// @brief Deserialize a serialized CAN frame payload
 /// @param[in] payload Payload to be deserialized
 /// @param[in] length Given payload length
 /// @param[out] frame Deserialized CAN frame from the given payload
-/// @returns 0 if the deserialization was successful; otherwise a negative error code.
+/// @returns '0' if the deserialization was successful; otherwise '-1'.
 /// @note The frame 'data' member should be initialized before passing.
+/// @remarks The 'frame' will be untouched in case of returning '-1'.
 int Deserialize_CAN_Payload(const uint8_t* payload, size_t length, can_frame_t* frame);
 
 #endif
