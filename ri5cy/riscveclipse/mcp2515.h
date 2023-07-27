@@ -2,6 +2,7 @@
 #define MCP2515_H
 
 #include "spi_helper.h"
+#include "can_frame.h"
 
 /// @define CAN Control Register
 #define REGISTER_CANCTRL 0x0F
@@ -29,7 +30,7 @@
 
 /// @note I don't what is wrong, but I cannot use the first 3 bytes of any array
 #define BUFFER_OFFSET (3)
-#define OFFSET_PTR(X) (X + BUFFER_OFFSET)
+#define OFFSET_PTR(x) (x + BUFFER_OFFSET)
 
 typedef uint8_t register_address_t;
 typedef uint8_t register_mask_t;
@@ -51,6 +52,16 @@ typedef enum operation_mode {
 	kLoopback = 0x40U,
 	kConfiguration = 0x80U
 } operation_mode_t;
+
+/// @brief Transmission buffer state flag
+typedef enum tx_buffer_state
+{
+	kNone = 0x00U,				///< None
+	kRequestedToSend = 0x08U,	///< Transmission is requested
+	kBusError = 0x10U,			///< Transmission failed due to bus error occurrence
+	kLostArbitration = 0x20U,	///< Transmission failed due to arbitration lost
+	kAborted = 0x40U			///< Transmission is aborted
+} tx_buffer_state_t;
 
 /// @brief Initialize the CAN controller
 /// @returns '0' if the initialization was successful; otherwise '-1'
@@ -79,6 +90,24 @@ int Set_CANMode(operation_mode_t mode, uint32_t interval, uint32_t timeout);
 /// @returns '0' if the mode was set successfully; otherwise a negative number
 /// @see Set_CANMode
 int Set_CANMode_Defaults(operation_mode_t mode);
+
+/// @brief Get the first transmission buffer (TXB0) state
+/// @returns Current buffer state
+tx_buffer_state_t GetTxBufferState();
+
+/// @brief Request to send a CAN frame on TXB0
+/// @param frame Frame to be sent
+/// @returns '0' if the request was successful; otherwise a negative number
+/// @remarks Returning '0' does not mean a successful transmission on the bus.
+/// @see GetTxBufferState
+int RequestToSend(const can_frame_t* frame);
+
+/// @brief Try to receive a CAN frame by reading the first receive buffer (RXB0)
+/// @param [out] frame Received frame
+/// @returns '0' if the receive was successful; otherwise a negative number
+/// @remarks Successful receive leads to clearing the RX0IF flag.
+/// @note By returning a negative number, the 'frame' will be untouched.
+int TryToReceive(can_frame_t* frame);
 
 /// @brief Dispose the CAN controller
 void Dispose_CAN(void);
