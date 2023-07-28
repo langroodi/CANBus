@@ -4,28 +4,30 @@
 #include "spi_helper.h"
 #include "can_frame.h"
 
-/// @define CAN Control Register
+/// @brief CAN control register
 #define REGISTER_CANCTRL 0x0F
-/// @define CAN Status Register
+/// @brief CAN status register
 #define REGISTER_CANSTAT 0x0E
-/// @define Operation Mode Register Mask (1110 0000)
+/// @brief First transmission buffer (TXB0) control register
+#define REGISTER_TXBCTRL 0x30
+/// @brief Operation mode register mask (1110 0000)
 #define OPMODE_MASK 0xE0
 
 #define RESET_SIZE 1
-/// @define Bit modification packet size
+/// @brief Bit modification packet size
 #define BITMODIFY_SIZE 4 // [Instruction][Address Byte][Mask Byte][Data Byte]
-/// @define Read packet size for a single register
+/// @brief Read packet size for a single register
 #define READ_SIZE 3
 
-/// @define Instruction byte packet offset
+/// @brief Instruction byte packet offset
 #define INSTRUCTION_OFFSET 0
-/// @define Register address byte packet offset
+/// @brief Register address byte packet offset
 #define ADDRESS_OFFSET 1
-/// @define Data byte(s) packet offset for a read/write instruction
+/// @brief Data byte(s) packet offset for a read/write instruction
 #define DATA_RW_OFFSET 2
-/// @define Mask offset for a modification instruction
+/// @brief Mask offset for a modification instruction
 #define MASK_OFFSET 2
-/// @define Data byte(s) packet offset for a modification instruction
+/// @brief Data byte(s) packet offset for a modification instruction
 #define DATA_MOD_OFFSET 3
 
 /// @note I don't what is wrong, but I cannot use the first 3 bytes of any array
@@ -91,9 +93,10 @@ int Set_CANMode(operation_mode_t mode, uint32_t interval, uint32_t timeout);
 /// @see Set_CANMode
 int Set_CANMode_Defaults(operation_mode_t mode);
 
-/// @brief Get the first transmission buffer (TXB0) state
-/// @returns Current buffer state
-tx_buffer_state_t GetTxBufferState();
+/// @brief Check whether the first transmission buffer (TXB0) has the given state or not
+/// @param state State to be checked
+/// @returns '1' if the buffer has the state, if not '0', and '-1' in case of error
+int Has_TxBuffer_State(tx_buffer_state_t state);
 
 /// @brief Request to send a CAN frame on TXB0
 /// @param frame Frame to be sent

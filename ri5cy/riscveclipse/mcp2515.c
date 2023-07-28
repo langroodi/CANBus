@@ -111,6 +111,21 @@ int Set_CANMode_Defaults(operation_mode_t mode)
 	return Set_CANMode(mode, DEFAULT_INTERVAL, DEFAULT_TIMEOUT);
 }
 
+int Has_TxBuffer_State(tx_buffer_state_t state)
+{
+	uint8_t register_value;
+	int result = try_Get_Register(REGISTER_TXBCTRL, &register_value);
+
+	if (result == 0)
+	{
+		uint8_t state_byte = (uint8_t)state;
+		uint8_t match = register_value & state_byte;
+		result = match == 0U ? 0 : 1;
+	}
+
+	return result;
+}
+
 void Dispose_CAN(void)
 {
 	Dispose_SPI();
