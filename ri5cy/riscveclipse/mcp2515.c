@@ -23,10 +23,10 @@ static int try_Get_Register(register_address_t address, uint8_t* value)
 	uint8_t rx_buffer[BUFFER_SIZE];
 
 	uint8_t tx_buffer[BUFFER_SIZE];
-	tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = kRead_Instruction;
+	tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = (uint8_t)kRead_Instruction;
 	tx_buffer[ADDRESS_OFFSET + BUFFER_OFFSET] = address;
 
-	int result = Transfer_SPI(OFFSET_PTR(rx_buffer), OFFSET_PTR(tx_buffer), BUFFER_SIZE);
+	int result = Transfer_SPI(OFFSET_PTR(rx_buffer), OFFSET_PTR(tx_buffer), READ_SIZE);
 	if (result == 0)
 	{
 		*value = rx_buffer[DATA_RW_OFFSET + BUFFER_OFFSET];
@@ -57,12 +57,12 @@ static size_t set_Register(register_address_t address, register_mask_t mask, uin
 
 	uint8_t tx_buffer[BUFFER_SIZE];
 	// [Instruction][Address Byte][Mask Byte][Data Byte]
-	tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = kBitModify_Instruction;
+	tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = (uint8_t)kBitModify_Instruction;
 	tx_buffer[ADDRESS_OFFSET + BUFFER_OFFSET] = address;
 	tx_buffer[MASK_OFFSET + BUFFER_OFFSET] = mask;
 	tx_buffer[DATA_MOD_OFFSET + BUFFER_OFFSET] = data;
 
-	int result = Transfer_SPI(OFFSET_PTR(rx_buffer), OFFSET_PTR(tx_buffer), BUFFER_SIZE);
+	int result = Transfer_SPI(OFFSET_PTR(rx_buffer), OFFSET_PTR(tx_buffer), BITMODIFY_SIZE);
 
 	return result;
 }
@@ -121,6 +121,29 @@ int Has_TxBuffer_State(tx_buffer_state_t state)
 		uint8_t state_byte = (uint8_t)state;
 		uint8_t match = register_value & state_byte;
 		result = match == 0U ? 0 : 1;
+	}
+
+	return result;
+}
+
+int RequestToSend(const can_frame_t* frame)
+{
+	const size_t BUFFER_SIZE = LOAD_TX_BUFFER_SIZE + BUFFER_OFFSET;
+
+	uint8_t tx_buffer[BUFFER_SIZE];
+	// [Instruction][Data Byte]
+	tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = (uint8_t)kLoadTxBuffer_Instruction;
+	Serialize_CAN_Frame(frame, OFFSET_PTR(tx_buffer) + LOAD_DATA_OFFSET);
+
+	int result = Transfer_SPI(NULL, OFFSET_PTR(tx_buffer), LOAD_TX_BUFFER_SIZE);
+
+	if (result == 0)
+	{
+		uint8_t rts_rxb0 = (uint8_t)kRts_Instruction;
+		rts_rxb0 = (uint8_t)(rts_rxb0 | RTS_RXB_MASK);
+		tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = rts_rxb0;
+
+		result = Transfer_SPI(NULL, OFFSET_PTR(tx_buffer), RTS_SIZE);
 	}
 
 	return result;

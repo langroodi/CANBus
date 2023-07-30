@@ -5,24 +5,32 @@
 #include "can_frame.h"
 
 /// @brief CAN control register
-#define REGISTER_CANCTRL 0x0F
+#define REGISTER_CANCTRL 0x0FU
 /// @brief CAN status register
-#define REGISTER_CANSTAT 0x0E
+#define REGISTER_CANSTAT 0x0EU
 /// @brief First transmission buffer (TXB0) control register
-#define REGISTER_TXBCTRL 0x30
+#define REGISTER_TXBCTRL 0x30U
 /// @brief Operation mode register mask (1110 0000)
-#define OPMODE_MASK 0xE0
+#define OPMODE_MASK 0xE0U
+/// @brief RXB0 Request-to-Send mask (0000 0001)
+#define RTS_RXB_MASK 0x01U
 
 #define RESET_SIZE 1
 /// @brief Bit modification packet size
 #define BITMODIFY_SIZE 4 // [Instruction][Address Byte][Mask Byte][Data Byte]
 /// @brief Read packet size for a single register
 #define READ_SIZE 3
+/// @brief Load TXB0 buffer instruction size
+#define LOAD_TX_BUFFER_SIZE (1 + CAN_FRAME_SIZE) // [Instruction][Serialize CAN Frame]
+/// @brief Request-to-Send instruction size
+#define RTS_SIZE 1
 
 /// @brief Instruction byte packet offset
 #define INSTRUCTION_OFFSET 0
 /// @brief Register address byte packet offset
 #define ADDRESS_OFFSET 1
+/// @brief Data byte(s) packet offset for a load TX buffer instruction
+#define LOAD_DATA_OFFSET 1
 /// @brief Data byte(s) packet offset for a read/write instruction
 #define DATA_RW_OFFSET 2
 /// @brief Mask offset for a modification instruction
@@ -31,7 +39,7 @@
 #define DATA_MOD_OFFSET 3
 
 /// @note I don't what is wrong, but I cannot use the first 3 bytes of any array
-#define BUFFER_OFFSET (3)
+#define BUFFER_OFFSET 3
 #define OFFSET_PTR(x) (x + BUFFER_OFFSET)
 
 typedef uint8_t register_address_t;
