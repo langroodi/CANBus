@@ -128,6 +128,7 @@ int Has_TxBuffer_State(tx_buffer_state_t state)
 
 int RequestToSend(const can_frame_t* frame)
 {
+	const int LOAD_TX_BUFFER_FAILED = -2;
 	const size_t BUFFER_SIZE = LOAD_TX_BUFFER_SIZE + BUFFER_OFFSET;
 
 	uint8_t tx_buffer[BUFFER_SIZE];
@@ -137,14 +138,60 @@ int RequestToSend(const can_frame_t* frame)
 
 	int result = Transfer_SPI(NULL, OFFSET_PTR(tx_buffer), LOAD_TX_BUFFER_SIZE);
 
-	if (result == 0)
+	if (result != 0)
 	{
-		uint8_t rts_rxb0 = (uint8_t)kRts_Instruction;
-		rts_rxb0 = (uint8_t)(rts_rxb0 | RTS_RXB_MASK);
-		tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = rts_rxb0;
-
-		result = Transfer_SPI(NULL, OFFSET_PTR(tx_buffer), RTS_SIZE);
+		return LOAD_TX_BUFFER_FAILED;
 	}
+
+	uint8_t rts_rxb0 = (uint8_t)kRts_Instruction;
+	rts_rxb0 = (uint8_t)(rts_rxb0 | RTS_RXB_MASK);
+	tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = rts_rxb0;
+
+	result = Transfer_SPI(NULL, OFFSET_PTR(tx_buffer), RTS_SIZE);
+
+	return result;
+}
+
+int TryToReceive(can_frame_t* frame)
+{
+	const int FETCH_RX_STATUS_FAILED = -4;
+	const int EMPTY_RX_BUFFER = -3;
+	const int READ_RX_BUFFER_FAILED = -2;
+
+	uint8_t instruction = (uint8_t)kRxStatus_Instruction;
+	uint8_t rx_status;
+
+	int result = Transfer_SPI(&rx_status, &instruction, RX_STATUS_SIZE);
+
+	if (result != 0)
+	{
+		return FETCH_RX_STATUS_FAILED;
+	}
+
+	const uint8_t MESSAGE_IN_RXB = (uint8_t)RXB_STATUS_MASK;
+
+	rx_status = (uint8_t)(rx_status & MESSAGE_IN_RXB);
+
+	if (rx_status != MESSAGE_IN_RXB)
+	{
+		return EMPTY_RX_BUFFER;
+	}
+
+	const size_t BUFFER_SIZE = READ_RX_BUFFER_SIZE + BUFFER_OFFSET;
+
+	uint8_t rx_buffer[BUFFER_SIZE];
+
+	uint8_t tx_buffer[BUFFER_SIZE];
+	tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = (uint8_t)kReadRxBuffer_Instruction;
+
+	result = Transfer_SPI(OFFSET_PTR(rx_buffer), OFFSET_PTR(tx_buffer), READ_RX_BUFFER_SIZE);
+
+	if (result != 0)
+	{
+		return READ_RX_BUFFER_FAILED;
+	}
+
+	result = Deserialize_CAN_Payload(OFFSET_PTR(rx_buffer) + READ_DATA_OFFSET, frame);
 
 	return result;
 }

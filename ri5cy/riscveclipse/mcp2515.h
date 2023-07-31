@@ -14,6 +14,8 @@
 #define OPMODE_MASK 0xE0U
 /// @brief RXB0 Request-to-Send mask (0000 0001)
 #define RTS_RXB_MASK 0x01U
+/// @brief Message in RXB0 status mask (0100 0000)
+#define RXB_STATUS_MASK 0x40U
 
 #define RESET_SIZE 1
 /// @brief Bit modification packet size
@@ -24,6 +26,10 @@
 #define LOAD_TX_BUFFER_SIZE (1 + CAN_FRAME_SIZE) // [Instruction][Serialize CAN Frame]
 /// @brief Request-to-Send instruction size
 #define RTS_SIZE 1
+/// @brief RX status instruction size
+#define RX_STATUS_SIZE 1
+/// @brief Read RXB0 buffer instruction size
+#define READ_RX_BUFFER_SIZE (1 + CAN_FRAME_SIZE) // [Instruction][Maximum CAN Frame]
 
 /// @brief Instruction byte packet offset
 #define INSTRUCTION_OFFSET 0
@@ -31,6 +37,8 @@
 #define ADDRESS_OFFSET 1
 /// @brief Data byte(s) packet offset for a load TX buffer instruction
 #define LOAD_DATA_OFFSET 1
+/// @brief Data byte(s) packet offset for a read RX buffer instruction
+#define READ_DATA_OFFSET 1
 /// @brief Data byte(s) packet offset for a read/write instruction
 #define DATA_RW_OFFSET 2
 /// @brief Mask offset for a modification instruction
