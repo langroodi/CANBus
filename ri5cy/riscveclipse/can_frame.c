@@ -49,7 +49,7 @@ void Serialize_CAN_Frame(const can_frame_t* frame, uint8_t* payload)
 	}
 }
 
-int Deserialize_CAN_Payload(const uint8_t* payload, size_t length, can_frame_t* frame)
+int Deserialize_CAN_Payload(const uint8_t* payload, can_frame_t* frame)
 {
 	const frame_type_t frame_type = (frame_type_t)(payload[RTR_FLAG_INDEX] & kRemoteTransmitRequest);
 	const uint8_t dlc = (uint8_t)(payload[DLC_INDEX] & DLC_MASK);

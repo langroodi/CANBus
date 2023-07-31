@@ -82,11 +82,10 @@ void Serialize_CAN_Frame(const can_frame_t* frame, uint8_t* payload);
 
 /// @brief Deserialize a serialized CAN frame payload
 /// @param[in] payload Payload to be deserialized
-/// @param[in] length Given payload length
 /// @param[out] frame Deserialized CAN frame from the given payload
 /// @returns '0' if the deserialization was successful; otherwise '-1'.
 /// @note The frame 'data' member should be initialized before passing.
 /// @remarks The 'frame' will be untouched in case of returning '-1'.
-int Deserialize_CAN_Payload(const uint8_t* payload, size_t length, can_frame_t* frame);
+int Deserialize_CAN_Payload(const uint8_t* payload, can_frame_t* frame);
 
 #endif
