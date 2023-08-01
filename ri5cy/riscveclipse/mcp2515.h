@@ -4,6 +4,8 @@
 #include "spi_helper.h"
 #include "can_frame.h"
 
+/// @brief CNF3 configuration register
+#define REGISTER_CNF 0x28U
 /// @brief CAN control register
 #define REGISTER_CANCTRL 0x0FU
 /// @brief CAN status register
@@ -17,7 +19,10 @@
 /// @brief Message in RXB0 status mask (0100 0000)
 #define RXB_STATUS_MASK 0x40U
 
+/// @brief Reset instruction size
 #define RESET_SIZE 1
+/// @brief Set baud-rate via write instruction size
+#define SET_BAUDRATE_SIZE 5
 /// @brief Bit modification packet size
 #define BITMODIFY_SIZE 4 // [Instruction][Address Byte][Mask Byte][Data Byte]
 /// @brief Read packet size for a single register
@@ -89,6 +94,12 @@ int Initialize_CAN(void);
 /// @returns '0' if the reset was successful; otherwise '-1'
 /// @note It is recommended by Microchip Technology to reset the controller at the startup.
 int Reset_CAN();
+
+/// @brief Set CAN bus communication baud-rate to 50 kbps
+/// @returns '0' if the baud-rate set was successful; otherwise '-1'
+/// @note The function should be called when the controller is in configuration mode.
+/// @remarks The baud-rate is only valid for 8MHz external crystal.
+int Set_BaudRate();
 
 /// @brief Try to the CAN controller operation mode
 /// @param[out] mode Current CAN controller operation mode

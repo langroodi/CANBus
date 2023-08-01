@@ -16,9 +16,34 @@ int Reset_CAN()
 	return result;
 }
 
+int Set_BaudRate()
+{
+	const size_t BUFFER_SIZE = (size_t)(SET_BAUDRATE_SIZE + BUFFER_OFFSET);
+
+	const size_t DATA_OFFSET_CNF3 =  (size_t)(DATA_RW_OFFSET + BUFFER_OFFSET);
+	const size_t DATA_OFFSET_CNF2 =  (size_t)(DATA_OFFSET_CNF3 + 1);
+	const size_t DATA_OFFSET_CNF1 =  (size_t)(DATA_OFFSET_CNF2 + 1);
+
+	const uint8_t DATA_CNF3 = 0x86U;
+	const uint8_t DATA_CNF2 = 0xB4U;
+	const uint8_t DATA_CNF1 = 0x03U;
+
+	uint8_t tx_buffer[BUFFER_SIZE];
+	// [Instruction][Address Byte][CNF3][CNF2][CNF1]
+	tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = (uint8_t)kWrite_Instruction;
+	tx_buffer[ADDRESS_OFFSET + BUFFER_OFFSET] = REGISTER_CNF;
+	tx_buffer[DATA_OFFSET_CNF3] = DATA_CNF3;
+	tx_buffer[DATA_OFFSET_CNF2] = DATA_CNF2;
+	tx_buffer[DATA_OFFSET_CNF1] = DATA_CNF1;
+
+	int result = Transfer_SPI(NULL, OFFSET_PTR(tx_buffer), SET_BAUDRATE_SIZE);
+
+	return result;
+}
+
 static int try_Get_Register(register_address_t address, uint8_t* value)
 {
-	const size_t BUFFER_SIZE = READ_SIZE + BUFFER_OFFSET;
+	const size_t BUFFER_SIZE = (size_t)(READ_SIZE + BUFFER_OFFSET);
 
 	uint8_t rx_buffer[BUFFER_SIZE];
 
@@ -51,9 +76,7 @@ int TryGet_CANMode(operation_mode_t* mode)
 
 static size_t set_Register(register_address_t address, register_mask_t mask, uint8_t data)
 {
-	const size_t BUFFER_SIZE = BITMODIFY_SIZE + BUFFER_OFFSET;
-
-	uint8_t rx_buffer[BUFFER_SIZE];
+	const size_t BUFFER_SIZE = (size_t)(BITMODIFY_SIZE + BUFFER_OFFSET);
 
 	uint8_t tx_buffer[BUFFER_SIZE];
 	// [Instruction][Address Byte][Mask Byte][Data Byte]
@@ -62,7 +85,7 @@ static size_t set_Register(register_address_t address, register_mask_t mask, uin
 	tx_buffer[MASK_OFFSET + BUFFER_OFFSET] = mask;
 	tx_buffer[DATA_MOD_OFFSET + BUFFER_OFFSET] = data;
 
-	int result = Transfer_SPI(OFFSET_PTR(rx_buffer), OFFSET_PTR(tx_buffer), BITMODIFY_SIZE);
+	int result = Transfer_SPI(NULL, OFFSET_PTR(tx_buffer), BITMODIFY_SIZE);
 
 	return result;
 }
@@ -129,7 +152,7 @@ int Has_TxBuffer_State(tx_buffer_state_t state)
 int RequestToSend(const can_frame_t* frame)
 {
 	const int LOAD_TX_BUFFER_FAILED = -2;
-	const size_t BUFFER_SIZE = LOAD_TX_BUFFER_SIZE + BUFFER_OFFSET;
+	const size_t BUFFER_SIZE = (size_t)(LOAD_TX_BUFFER_SIZE + BUFFER_OFFSET);
 
 	uint8_t tx_buffer[BUFFER_SIZE];
 	// [Instruction][Data Byte]
@@ -177,7 +200,7 @@ int TryToReceive(can_frame_t* frame)
 		return EMPTY_RX_BUFFER;
 	}
 
-	const size_t BUFFER_SIZE = READ_RX_BUFFER_SIZE + BUFFER_OFFSET;
+	const size_t BUFFER_SIZE = (size_t)(READ_RX_BUFFER_SIZE + BUFFER_OFFSET);
 
 	uint8_t rx_buffer[BUFFER_SIZE];
 
