@@ -118,11 +118,24 @@ static void reset_task(void *pvParameters)
 
 	if (successful == 0)
 	{
-	    PRINTF("Reseting LPSPI master completed successfully.\r\n");
+	    PRINTF("Reseting CAN completed successfully.\r\n");
     }
     else
     {
-        PRINTF("Reseting LPSPI master completed with error!\r\n");
+        PRINTF("Reseting CAN completed with error!\r\n");
+    }
+
+	vTaskDelay(500);
+
+	successful = Set_BaudRate();
+
+	if (successful == 0)
+	{
+	    PRINTF("Setting CAN baud-rate completed successfully.\r\n");
+    }
+    else
+    {
+        PRINTF("Reseting CAN baud-rate completed with error!\r\n");
     }
 
     vTaskSuspend(NULL);
@@ -130,7 +143,9 @@ static void reset_task(void *pvParameters)
 
 static void set_mode_task(void *pvParameters)
 {
-	const operation_mode_t REQUESTED_MODE = kLoopback;
+	vTaskDelay(1000);
+
+	const operation_mode_t REQUESTED_MODE = kNormal;
 	int successful = Set_CANMode_Defaults(REQUESTED_MODE);
 
 	if (successful == 0)
@@ -147,6 +162,8 @@ static void set_mode_task(void *pvParameters)
 
 static void get_mode_task(void *pvParameters)
 {
+	vTaskDelay(2000);
+
 	while (1)
 	{
 		operation_mode_t mode;
@@ -183,6 +200,8 @@ static void get_mode_task(void *pvParameters)
 
 static void data_loopback_task(void *pvParameters)
 {
+	vTaskDelay(3000);
+
 	can_frame_t tx_frame;
 	uint8_t tx_data[] = { 0, 1 };
 
