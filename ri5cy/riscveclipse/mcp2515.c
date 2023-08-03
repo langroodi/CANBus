@@ -8,7 +8,7 @@ int Initialize_CAN(void)
 	return result;
 }
 
-int Reset_CAN()
+int Reset_CAN(void)
 {
 	uint8_t tx_buffer = kReset_Instruction;
 	int result = Transfer_SPI(NULL, &tx_buffer, RESET_SIZE);
@@ -16,7 +16,7 @@ int Reset_CAN()
 	return result;
 }
 
-int Set_BaudRate()
+int Set_BaudRate(void)
 {
 	const size_t BUFFER_SIZE = (size_t)(SET_BAUDRATE_SIZE + BUFFER_OFFSET);
 

@@ -93,13 +93,13 @@ int Initialize_CAN(void);
 /// @brief Reset the CAN controller
 /// @returns '0' if the reset was successful; otherwise '-1'
 /// @note It is recommended by Microchip Technology to reset the controller at the startup.
-int Reset_CAN();
+int Reset_CAN(void);
 
 /// @brief Set CAN bus communication baud-rate to 50 kbps
 /// @returns '0' if the baud-rate set was successful; otherwise '-1'
 /// @note The function should be called when the controller is in configuration mode.
 /// @remarks The baud-rate is only valid for 8MHz external crystal.
-int Set_BaudRate();
+int Set_BaudRate(void);
 
 /// @brief Try to the CAN controller operation mode
 /// @param[out] mode Current CAN controller operation mode
