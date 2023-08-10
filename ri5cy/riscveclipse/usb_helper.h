@@ -6,9 +6,6 @@
 #include "usb_device_class.h"
 #include "usb_device_descriptor.h"
 
-/*******************************************************************************
-* Definitions
-******************************************************************************/
 #define CONTROLLER_ID kUSB_ControllerKhci0
 #define DATA_BUFF_SIZE FS_CDC_VCOM_BULK_OUT_PACKET_SIZE
 
@@ -60,9 +57,6 @@ typedef struct _usb_cdc_acm_info
 
 /// @brief USB data reception callback
 typedef void (*receive_usb_callback_t)(const uint8_t*, size_t);
-
-#define CONTROLLER_ID kUSB_ControllerKhci0
-#define USB_DEVICE_INTERRUPT_PRIORITY (3U)
 
 /// @brief Initialize the USB CDC
 /// @returns '0' if the initialization was successful; otherwise '-1'

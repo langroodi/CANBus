@@ -1,19 +1,11 @@
 #include "usb_device_config.h"
 #include "usb_helper.h"
 #include "usb_device_cdc_acm.h"
-
-/*******************************************************************************
- * Prototypes
- ******************************************************************************/
-void USB_DeviceClockInit(void);
-void USB_DeviceIsrEnable(void);
+#include "fsl_msmc.h"
 
 usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, void *param);
 usb_status_t USB_DeviceCallback(usb_device_handle handle, uint32_t event, void *param);
 
-/*******************************************************************************
-* Variables
-******************************************************************************/
 extern usb_device_endpoint_struct_t g_UsbDeviceCdcVcomDicEndpoints[];
 extern usb_device_class_struct_t g_UsbDeviceCdcVcomConfig;
 /* Data structure of virtual com device */
@@ -89,6 +81,15 @@ void USB_DeviceIsrEnable(void)
     /* Install isr, set priority, and enable IRQ. */
     NVIC_SetPriority((IRQn_Type)irqNumber, USB_DEVICE_INTERRUPT_PRIORITY);
     EnableIRQ((IRQn_Type)irqNumber);
+}
+
+void USB_DeviceIsrDisable(void)
+{
+    uint8_t irqNumber;
+    uint8_t usbDeviceKhciIrq[] = USB_IRQS;
+    irqNumber = usbDeviceKhciIrq[CONTROLLER_ID - kUSB_ControllerKhci0];
+
+    DisableIRQ((IRQn_Type)irqNumber);
 }
 
 /*!
@@ -417,6 +418,12 @@ void USB_DeviceApplicationInit(void)
 int Initialize_USB(void)
 {
 	receive_usb_callback = NULL;
+
+    SCG->FIRCCSR |= SCG_FIRCCSR_FIRCSTEN_MASK | SCG_FIRCCSR_FIRCLPEN_MASK;
+    SPM->CORELPCNFG |=
+        SPM_CORELPCNFG_BGEN_MASK | SPM_CORELPCNFG_BGBDS_MASK;
+    SMC_SetPowerModeProtection(SMC0, kSMC_AllowPowerModeVlp);
+
 	USB_DeviceApplicationInit();
 
 	return 0;
@@ -441,4 +448,14 @@ void Set_Receive_USB_Callback(receive_usb_callback_t callback)
 void Reset_Receive_USB_Callback()
 {
 	receive_usb_callback = NULL;
+}
+
+void Dispose_USB(void)
+{
+	Reset_Receive_USB_Callback();
+
+	USB_DeviceStop(s_cdcVcom.deviceHandle);
+	USB_DeviceIsrDisable();
+	USB_DeviceClassDeinit(CONTROLLER_ID);
+	CLOCK_DisableUsbfs0Clock();
 }
