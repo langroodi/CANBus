@@ -1,27 +1,25 @@
+#include "usb_device_config.h"
 #include "usb_helper.h"
-
 #include "usb_device_cdc_acm.h"
 
-receive_usb_callback_t receive_usb_callback;
+/*******************************************************************************
+ * Prototypes
+ ******************************************************************************/
+void USB_DeviceClockInit(void);
+void USB_DeviceIsrEnable(void);
 
 usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, void *param);
 usb_status_t USB_DeviceCallback(usb_device_handle handle, uint32_t event, void *param);
 
-/* CDC ACM information */
-USB_DATA_ALIGNMENT static usb_cdc_acm_info_t s_usbCdcAcmInfo = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0, 0};
-
+/*******************************************************************************
+* Variables
+******************************************************************************/
 extern usb_device_endpoint_struct_t g_UsbDeviceCdcVcomDicEndpoints[];
 extern usb_device_class_struct_t g_UsbDeviceCdcVcomConfig;
+/* Data structure of virtual com device */
+usb_cdc_vcom_struct_t s_cdcVcom;
 
-/* USB device class information */
-static usb_device_class_config_struct_t s_cdcAcmConfig[1] = {{
-    USB_DeviceCdcVcomCallback, 0, &g_UsbDeviceCdcVcomConfig,
-}};
-
-/* USB device class configuraion information */
-static usb_device_class_config_list_struct_t s_cdcAcmConfigList = {
-    s_cdcAcmConfig, USB_DeviceCallback, 1,
-};
+receive_usb_callback_t receive_usb_callback;
 
 /* Line codinig of cdc device */
 static uint8_t s_lineCoding[LINE_CODING_SIZE] = {
@@ -34,9 +32,6 @@ static uint8_t s_lineCoding[LINE_CODING_SIZE] = {
     LINE_CODING_PARITYTYPE,
     LINE_CODING_DATABITS};
 
-/* Data structure of virtual com device */
-usb_cdc_vcom_struct_t s_cdcVcom;
-
 /* Abstract state of cdc device */
 static uint8_t s_abstractState[COMM_FEATURE_DATA_SIZE] = {(STATUS_ABSTRACT_STATE >> 0U) & 0x00FFU,
                                                           (STATUS_ABSTRACT_STATE >> 8U) & 0x00FFU};
@@ -45,10 +40,32 @@ static uint8_t s_abstractState[COMM_FEATURE_DATA_SIZE] = {(STATUS_ABSTRACT_STATE
 static uint8_t s_countryCode[COMM_FEATURE_DATA_SIZE] = {(COUNTRY_SETTING >> 0U) & 0x00FFU,
                                                         (COUNTRY_SETTING >> 8U) & 0x00FFU};
 
+/* CDC ACM information */
+USB_DATA_ALIGNMENT static usb_cdc_acm_info_t s_usbCdcAcmInfo = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 0, 0, 0, 0, 0};
+/* Data buffer for receiving and sending*/
 USB_DATA_ALIGNMENT static uint8_t s_currRecvBuf[DATA_BUFF_SIZE];
 volatile static uint32_t s_recvSize = 0;
 
-void usb_DeviceClockInit(void)
+/* USB device class information */
+static usb_device_class_config_struct_t s_cdcAcmConfig[1] = {{
+    USB_DeviceCdcVcomCallback, 0, &g_UsbDeviceCdcVcomConfig,
+}};
+
+/* USB device class configuraion information */
+static usb_device_class_config_list_struct_t s_cdcAcmConfigList = {
+    s_cdcAcmConfig, USB_DeviceCallback, 1,
+};
+
+/*******************************************************************************
+* Code
+******************************************************************************/
+
+void USB0_IRQHandler(void)
+{
+    USB_DeviceKhciIsrFunction(s_cdcVcom.deviceHandle);
+}
+
+void USB_DeviceClockInit(void)
 {
     SystemCoreClockUpdate();
     CLOCK_EnableUsbfs0Clock(kCLOCK_UsbSrcIrc48M, 48000000U);
@@ -63,40 +80,15 @@ void usb_DeviceClockInit(void)
     }
 }
 
-void usb_DeviceIsrEnable(void)
+void USB_DeviceIsrEnable(void)
 {
     uint8_t irqNumber;
     uint8_t usbDeviceKhciIrq[] = USB_IRQS;
     irqNumber = usbDeviceKhciIrq[CONTROLLER_ID - kUSB_ControllerKhci0];
 
-/* Install isr, set priority, and enable IRQ. */
+    /* Install isr, set priority, and enable IRQ. */
     NVIC_SetPriority((IRQn_Type)irqNumber, USB_DEVICE_INTERRUPT_PRIORITY);
-
     EnableIRQ((IRQn_Type)irqNumber);
-}
-
-void usb_DeviceApplicationInit(void)
-{
-	usb_DeviceClockInit();
-
-    s_cdcVcom.speed = USB_SPEED_FULL;
-    s_cdcVcom.attach = 0;
-    s_cdcVcom.cdcAcmHandle = (class_handle_t)NULL;
-    s_cdcVcom.deviceHandle = NULL;
-
-    if (kStatus_USB_Success != USB_DeviceClassInit(CONTROLLER_ID, &s_cdcAcmConfigList, &s_cdcVcom.deviceHandle))
-    {
-        usb_echo("USB device init failed\r\n");
-    }
-    else
-    {
-        usb_echo("USB device CDC virtual com demo\r\n");
-        s_cdcVcom.cdcAcmHandle = s_cdcAcmConfigList.config->classHandle;
-    }
-
-    usb_DeviceIsrEnable();
-
-    USB_DeviceRun(s_cdcVcom.deviceHandle);
 }
 
 /*!
@@ -152,21 +144,18 @@ usb_status_t USB_DeviceCdcVcomCallback(class_handle_t handle, uint32_t event, vo
 
                 if (!s_recvSize)
                 {
-                    // Schedule buffer for next receive event
+                    /* Schedule buffer for next receive event */
                     error = USB_DeviceCdcAcmRecv(handle, USB_CDC_VCOM_BULK_OUT_ENDPOINT, s_currRecvBuf,
                                                  g_UsbDeviceCdcVcomDicEndpoints[0].maxPacketSize);
-
-					if (error == kStatus_USB_Success &&
-						(1 == s_cdcVcom.attach) &&
-						(1 == s_cdcVcom.startTransactions) &&
-						(0 != s_recvSize) &&
+                }
+                else if ((1 == s_cdcVcom.attach) &&
+                		(1 == s_cdcVcom.startTransactions) &&
 						(0xFFFFFFFF != s_recvSize))
-					{
-						if (receive_usb_callback)
-							(*receive_usb_callback)(s_currRecvBuf, s_recvSize);
+                {
+                	if (receive_usb_callback)
+                		(*receive_usb_callback)(s_currRecvBuf, s_recvSize);
 
-						s_recvSize = 0;
-					}
+                	s_recvSize = 0;
                 }
             }
         }
@@ -394,10 +383,41 @@ usb_status_t USB_DeviceCallback(usb_device_handle handle, uint32_t event, void *
     return error;
 }
 
+/*!
+ * @brief Application initialization function.
+ *
+ * This function initializes the application.
+ *
+ * @return None.
+ */
+void USB_DeviceApplicationInit(void)
+{
+    USB_DeviceClockInit();
+
+    s_cdcVcom.speed = USB_SPEED_FULL;
+    s_cdcVcom.attach = 0;
+    s_cdcVcom.cdcAcmHandle = (class_handle_t)NULL;
+    s_cdcVcom.deviceHandle = NULL;
+
+    if (kStatus_USB_Success != USB_DeviceClassInit(CONTROLLER_ID, &s_cdcAcmConfigList, &s_cdcVcom.deviceHandle))
+    {
+        usb_echo("USB device init failed\r\n");
+    }
+    else
+    {
+        usb_echo("USB device CDC virtual com demo\r\n");
+        s_cdcVcom.cdcAcmHandle = s_cdcAcmConfigList.config->classHandle;
+    }
+
+    USB_DeviceIsrEnable();
+
+    USB_DeviceRun(s_cdcVcom.deviceHandle);
+}
+
 int Initialize_USB(void)
 {
 	receive_usb_callback = NULL;
-	usb_DeviceApplicationInit();
+	USB_DeviceApplicationInit();
 
 	return 0;
 }
@@ -422,5 +442,3 @@ void Reset_Receive_USB_Callback()
 {
 	receive_usb_callback = NULL;
 }
-
-

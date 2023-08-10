@@ -6,12 +6,13 @@
 #include "usb_device_class.h"
 #include "usb_device_descriptor.h"
 
+/*******************************************************************************
+* Definitions
+******************************************************************************/
+#define CONTROLLER_ID kUSB_ControllerKhci0
 #define DATA_BUFF_SIZE FS_CDC_VCOM_BULK_OUT_PACKET_SIZE
 
-/* Communications feature */
-#define COMM_FEATURE_DATA_SIZE (0x02)
-#define STATUS_ABSTRACT_STATE (0x0000)
-#define COUNTRY_SETTING (0x0000)
+#define USB_DEVICE_INTERRUPT_PRIORITY (3U)
 
 /* Currently configured line coding */
 #define LINE_CODING_SIZE (0x07)
@@ -19,6 +20,11 @@
 #define LINE_CODING_CHARFORMAT (0x00)
 #define LINE_CODING_PARITYTYPE (0x00)
 #define LINE_CODING_DATABITS (0x08)
+
+/* Communications feature */
+#define COMM_FEATURE_DATA_SIZE (0x02)
+#define STATUS_ABSTRACT_STATE (0x0000)
+#define COUNTRY_SETTING (0x0000)
 
 /* Notification of serial state */
 #define NOTIF_PACKET_SIZE (0x08)
