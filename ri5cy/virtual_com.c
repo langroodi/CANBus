@@ -9,12 +9,9 @@
 #include "clock_config.h"
 #include "board.h"
 
-#include "usb_device_config.h"
 #include "riscveclipse/usb_helper.h"
-#include "usb_device_cdc_acm.h"
 
 #include "pin_mux.h"
-#include "fsl_msmc.h"
 
 /*******************************************************************************
 * Variables
@@ -62,6 +59,8 @@ void APPTask(void *handle)
     {
     	__NOP();
     }
+
+    Dispose_USB();
 }
 
 int main(void)
@@ -69,11 +68,6 @@ int main(void)
     BOARD_InitPins();
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
-
-    SCG->FIRCCSR |= SCG_FIRCCSR_FIRCSTEN_MASK | SCG_FIRCCSR_FIRCLPEN_MASK;
-    SPM->CORELPCNFG |=
-        SPM_CORELPCNFG_BGEN_MASK | SPM_CORELPCNFG_BGBDS_MASK;
-    SMC_SetPowerModeProtection(SMC0, kSMC_AllowPowerModeVlp);
 
     if (xTaskCreate(APPTask,                         /* pointer to the task                      */
                     s_appName,                       /* task name for kernel awareness debugging */
