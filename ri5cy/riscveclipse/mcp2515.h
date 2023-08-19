@@ -139,6 +139,14 @@ int RequestToSend(const can_frame_t* frame);
 /// @note By returning a negative number, the 'frame' will be untouched.
 int TryToReceive(can_frame_t* frame);
 
+/// @brief Begin to receive a CAN frame by reading the first receive buffer (RXB0)
+/// @param [out] frame Received frame
+/// @param [in] timeout Receiving timeout in millisecond
+/// @returns '0' if the receive was successful; otherwise a negative number
+/// @remarks Successful receive leads to clearing the RX0IF flag.
+/// @note By returning a negative number, the 'frame' will be untouched.
+int BeginToReceive(can_frame_t* frame, uint32_t timeout);
+
 /// @brief Dispose the CAN controller
 void Dispose_CAN(void);
 

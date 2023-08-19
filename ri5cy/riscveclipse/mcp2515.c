@@ -219,6 +219,27 @@ int TryToReceive(can_frame_t* frame)
 	return result;
 }
 
+int BeginToReceive(can_frame_t* frame, uint32_t timeout)
+{
+	const size_t BUFFER_SIZE = (size_t)(READ_RX_BUFFER_SIZE + BUFFER_OFFSET);
+
+	uint8_t rx_buffer[BUFFER_SIZE];
+
+	uint8_t tx_buffer[BUFFER_SIZE];
+	tx_buffer[INSTRUCTION_OFFSET + BUFFER_OFFSET] = (uint8_t)kReadRxBuffer_Instruction;
+
+	int result = Poll_SPI(OFFSET_PTR(rx_buffer), OFFSET_PTR(tx_buffer), READ_RX_BUFFER_SIZE, timeout);
+
+	if (result != 0)
+	{
+		return result;
+	}
+
+	result = Deserialize_CAN_Payload(OFFSET_PTR(rx_buffer) + READ_DATA_OFFSET, frame);
+
+	return result;
+}
+
 void Dispose_CAN(void)
 {
 	Dispose_SPI();
