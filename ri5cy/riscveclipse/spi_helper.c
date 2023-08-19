@@ -59,14 +59,14 @@ int Transfer_SPI(uint8_t* rx_buffer, uint8_t* tx_buffer, size_t buffer_size)
     }
 }
 
-int PollIn_SPI(uint8_t* rx_buffer, size_t buffer_size, uint32_t timeout)
+int Poll_SPI(uint8_t* rx_buffer, uint8_t* tx_buffer, size_t buffer_size, uint32_t timeout)
 {
-	const int BUSY_SPI = -1;
-	const int TRANSMISSION_FAILURE = -2;
-	const int SEMAPHORE_TIMEOUT = -3;
+	const int BUSY_SPI = -4;
+	const int TRANSMISSION_FAILURE = -3;
+	const int SEMAPHORE_TIMEOUT = -2;
 
 	pollerXfer.rxData = rx_buffer;
-	pollerXfer.txData = NULL;
+	pollerXfer.txData = tx_buffer;
 	pollerXfer.dataSize = buffer_size;
 	pollerXfer.configFlags = LPSPI_MASTER_PCS_FOR_TRANSFER | kLPSPI_MasterPcsContinuous;
 
