@@ -1,5 +1,7 @@
 #include "spi_helper.h"
 
+static lpspi_transfer_t pollerXfer;
+
 int Initialize_SPI(void)
 {
     // Set clock source for LPSPI and get master clock source
@@ -28,14 +30,12 @@ int Initialize_SPI(void)
 					&master_config,
 					source_clock);
 
-    if (status == kStatus_Success)
-    {
-    	return 0;
-    }
-    else
+    if (status != kStatus_Success)
     {
     	return -1;
     }
+
+    return 0;
 }
 
 int Transfer_SPI(uint8_t* rx_buffer, uint8_t* tx_buffer, size_t buffer_size)
@@ -57,6 +57,43 @@ int Transfer_SPI(uint8_t* rx_buffer, uint8_t* tx_buffer, size_t buffer_size)
     {
     	return -1;
     }
+}
+
+int PollIn_SPI(uint8_t* rx_buffer, size_t buffer_size, uint32_t timeout)
+{
+	const int BUSY_SPI = -1;
+	const int TRANSMISSION_FAILURE = -2;
+	const int SEMAPHORE_TIMEOUT = -3;
+
+	pollerXfer.rxData = rx_buffer;
+	pollerXfer.txData = NULL;
+	pollerXfer.dataSize = buffer_size;
+	pollerXfer.configFlags = LPSPI_MASTER_PCS_FOR_TRANSFER | kLPSPI_MasterPcsContinuous;
+
+    // Lock the resource mutex
+    if (xSemaphoreTake(master_rtos_handle.mutex, timeout) != pdTRUE)
+    {
+        return BUSY_SPI;
+    }
+
+    status_t status = LPSPI_MasterTransferNonBlocking(master_rtos_handle.base, &master_rtos_handle.drv_handle, &pollerXfer);
+    if (status != kStatus_Success)
+    {
+        xSemaphoreGive(master_rtos_handle.mutex);
+        return TRANSMISSION_FAILURE;
+    }
+
+    // Wait for transfer to finish or timeout
+    if (xSemaphoreTake(master_rtos_handle.event, timeout) != pdTRUE)
+    {
+    	xSemaphoreGive(master_rtos_handle.mutex);
+    	return SEMAPHORE_TIMEOUT;
+    }
+
+    // Unlock the resource mutex
+    xSemaphoreGive(master_rtos_handle.mutex);
+
+    return 0;
 }
 
 void Dispose_SPI(void)

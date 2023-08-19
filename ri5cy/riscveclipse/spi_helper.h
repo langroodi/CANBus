@@ -41,6 +41,14 @@ int Initialize_SPI(void);
 /// @note For read-only or write-only transmission, 'tx_buffer' or 'rx_buffer' can be 'NULL' respectively.
 int Transfer_SPI(uint8_t* rx_buffer, uint8_t* tx_buffer, size_t buffer_size);
 
+/// @brief Try to read data via SPI using a polling mechanism
+/// @param[out] rx_buffer Receive buffer
+/// @param buffer_size Receive buffer size
+/// @param timeout Polling timeout in milliseconds
+/// @returns '0' if the read was successful within the given timeout; otherwise a negative number.
+/// @remarks The function meant to be used within a loop.
+int PollIn_SPI(uint8_t* rx_buffer, size_t buffer_size, uint32_t timeout);
+
 /// @brief Dispose the SPI
 void Dispose_SPI(void);
 
