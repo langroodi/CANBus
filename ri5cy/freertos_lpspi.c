@@ -229,9 +229,7 @@ static void data_loopback_task(void *pvParameters)
 	        PRINTF("LPSPI master frame sent completed with error!\r\n");
 	    }
 
-	    vTaskDelay(500);
-
-		successful = TryToReceive(&rx_frame);
+		successful = BeginToReceive(&rx_frame, 500);
 
 	    if (successful == 0)
 	    {
