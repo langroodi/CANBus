@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 NXP
+ * Copyright 2017 NXP
  * All rights reserved.
  * 
  * SPDX-License-Identifier: BSD-3-Clause
@@ -35,10 +35,6 @@ void BOARD_InitBootPins(void) {
 #define PIN6_IDX                         6u   /*!< Pin number for pin 6 in a port */
 #define PIN7_IDX                         7u   /*!< Pin number for pin 7 in a port */
 #define PIN8_IDX                         8u   /*!< Pin number for pin 8 in a port */
-#define PIN17_IDX                       17u   /*!< Pin number for pin 17 in a port */
-#define PIN19_IDX                       19u   /*!< Pin number for pin 19 in a port */
-#define PIN25_IDX                       25u   /*!< Pin number for pin 25 in a port */
-#define PIN27_IDX                       27u   /*!< Pin number for pin 27 in a port */
 
 /*
  * TEXT BELOW IS USED AS SETTING FOR TOOLS *************************************
@@ -51,10 +47,6 @@ BOARD_InitPins:
   - {pin_num: D2, peripheral: LPSPI0, signal: OUT, pin_signal: PTB5/RF0_ACTIVE/LPSPI0_SOUT/LPUART1_RTS_b/SAI0_MCLK/FB_AD8/TPM0_CH3}
   - {pin_num: E1, peripheral: LPSPI0, signal: PCS2, pin_signal: PTB6/LLWU_P7/LPSPI0_PCS2/LPI2C1_SDA/SAI0_RX_BCLK/FB_AD7/TPM0_CH4/RF0_BSM_FRAME}
   - {pin_num: E2, peripheral: LPSPI0, signal: IN, pin_signal: ADC0_SE2/PTB7/LLWU_P8/LPSPI0_SIN/LPI2C1_SDAS/SAI0_RX_FS/FB_AD6/TPM0_CH5/RF0_BSM_DATA}
-  - {pin_num: D7, peripheral: LPSPI3, signal: SCK, pin_signal: PTA19/LPSPI2_PCS3/LPSPI3_SCK/EMVSIM0_VCCEN/FB_AD19/TPM2_CH5}
-  - {pin_num: A3, peripheral: LPSPI3, signal: IN, pin_signal: PTA27/LPUART1_CTS_b/LPSPI3_SIN/FB_AD29}
-  - {pin_num: B5, peripheral: LPSPI3, signal: OUT, pin_signal: PTA25/LPUART1_RX/LPSPI3_SOUT/LPI2C2_SDAS/FB_AD31}
-  - {pin_num: F7, peripheral: LPSPI3, signal: PCS1, pin_signal: PTA17/LPI2C2_HREQ/LPSPI3_PCS1/EMVSIM0_CLK/FB_AD21}
  * BE CAREFUL MODIFYING THIS COMMENT - IT IS YAML SETTINGS FOR TOOLS ***********
  */
 
