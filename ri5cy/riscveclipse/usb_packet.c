@@ -1,7 +1,6 @@
-#include <string.h>
 #include "usb_packet.h"
 
-void Serialize_To_USB_Frame(const can_frame_t* frame, uint8_t* packet)
+size_t Serialize_To_USB_Frame(const can_frame_t* frame, uint8_t* packet)
 {
 	packet[PACKET_HEADER_INDEX] = USB_PACKET_HEADER;
 	packet[PACKET_TYPE_INDEX] = USB_PACKET_TYPE;
@@ -45,4 +44,8 @@ void Serialize_To_USB_Frame(const can_frame_t* frame, uint8_t* packet)
 	}
 
 	packet[offset] = USB_PACKET_TRAILER;
+	// Add the trailer size
+	size_t result = offset + 1;
+
+	return result;
 }

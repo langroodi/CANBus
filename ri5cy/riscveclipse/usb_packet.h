@@ -1,6 +1,7 @@
 #ifndef USB_PACKET_H
 #define USB_PACKET_H
 
+#include <string.h>
 #include "can_frame.h"
 
 /// @brief USB packet maximum size in bytes
@@ -27,7 +28,8 @@
 /// @brief Serialize a CAN frame into a USB packet byte array
 /// @param[in] frame CAN frame to be serialized
 /// @param[out] packet Pre-allocated USB packet
+/// @returns USB packet size
 /// @remarks No validation will be performed on the given frame.
-void Serialize_To_USB_Frame(const can_frame_t* frame, uint8_t* packet);
+size_t Serialize_To_USB_Frame(const can_frame_t* frame, uint8_t* packet);
 
 #endif
