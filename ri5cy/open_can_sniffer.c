@@ -12,28 +12,20 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
-/* Task priorities. */
-#define master_task_PRIORITY (configMAX_PRIORITIES - 1)
 
-/* Task sizes */
-#define SMALL_STACK_SIZE (configMINIMAL_STACK_SIZE + 64)
-#define MEDIUM_STACK_SIZE (configMINIMAL_STACK_SIZE + 128)
-#define LARGE_STACK_SIZE (configMINIMAL_STACK_SIZE + 256)
-
-#define FRAME_DATA_LENGTH (2)
-
-/*******************************************************************************
-* Variables
-******************************************************************************/
-
-static char const *s_appName = "app task";
+static char const *MAIN_TASK_NAME = "main task";
+#define TASK_STACK_SIZE (5000L / sizeof(portSTACK_TYPE))
+#define MAIN_TASK_PRIORITY (4)
+#define MAIN_TASK_DELAY (500)
 
 /*******************************************************************************
  * Code
  ******************************************************************************/
 
-void APPTask(void *handle)
+void main_Task(void *handle)
 {
+	const TickType_t xDelay = MAIN_TASK_DELAY / portTICK_PERIOD_MS;
+
     Initialize_USB();
 
 	int successful = Reset_CAN();
@@ -47,7 +39,7 @@ void APPTask(void *handle)
         PRINTF("Reseting CAN completed with error!\r\n");
     }
 
-	vTaskDelay(5000);
+	vTaskDelay(xDelay);
 
 	successful = Set_BaudRate();
 
@@ -60,97 +52,55 @@ void APPTask(void *handle)
         PRINTF("Reseting CAN baud-rate completed with error!\r\n");
     }
 
-	const operation_mode_t REQUESTED_MODE = kLoopback;
+	const operation_mode_t REQUESTED_MODE = kNormal;
 	successful = Set_CANMode(REQUESTED_MODE, 1000, 10000);
 
 	if (successful == 0)
 	{
-	    PRINTF("Setting mode completed successfully.\r\n");
+	    PRINTF("Setting CAN mode completed successfully.\r\n");
     }
     else
     {
-        PRINTF("Setting mode completed with error!\r\n");
+        PRINTF("Setting CAN mode completed with error!\r\n");
     }
 
-	can_frame_t tx_frame;
-	uint8_t tx_data[] = { 'H', 'i' };
 	uint8_t usb_packet[USB_PACKET_SIZE + BUFFER_OFFSET];
 
-	tx_frame.id = 256U;
-	tx_frame.idType = kStandardFrame_ID;
-	tx_frame.frameType = kDataFrame;
-	tx_frame.dataLength = FRAME_DATA_LENGTH;
-	tx_frame.data = tx_data;
-
 	can_frame_t rx_frame;
-	uint8_t rx_data[FRAME_DATA_LENGTH];
-
-	rx_frame.data = rx_data;
+	uint8_t rx_data[MAX_DATA_SIZE + BUFFER_OFFSET];
+	rx_frame.data = OFFSET_PTR(rx_data);
 
     while (1)
     {
-		successful = RequestToSend(&tx_frame);
+    	vTaskDelay(xDelay);
+		successful = TryToReceive(&rx_frame);
 
 	    if (successful == 0)
 	    {
-	        PRINTF("LPSPI master frame sent successfully.\r\n");
-	    }
-	    else
-	    {
-	        PRINTF("LPSPI master frame sent completed with error!\r\n");
-	    }
+	    	PRINTF("LPSPI master frame received completed successfully!\r\n");
 
-		successful = BeginToReceive(&rx_frame, 5000);
-
-	    if (successful == 0)
-	    {
-	        if (rx_frame.id == tx_frame.id &&
-	        	rx_frame.idType == tx_frame.idType &&
-				rx_frame.frameType == tx_frame.frameType &&
-				rx_frame.dataLength == tx_frame.dataLength &&
-				memcmp(rx_data, tx_data, FRAME_DATA_LENGTH) == 0)
-	        {
-	        	PRINTF("Data loopback is verified.\r\n");
-
-	        	size_t size = Serialize_To_USB_Frame(&rx_frame, OFFSET_PTR(usb_packet));
-	    		Send_USB(OFFSET_PTR(usb_packet), size);
-	        }
-	        else
-	        {
-	        	PRINTF("Data loopback verification failed!\r\n");
-	        }
+        	size_t size = Serialize_To_USB_Frame(&rx_frame, OFFSET_PTR(usb_packet));
+    		Send_USB(OFFSET_PTR(usb_packet), size);
 	    }
 	    else
 	    {
 	        PRINTF("LPSPI master frame received completed with error!\r\n");
 	    }
-
-	    vTaskDelay(5000);
     }
 
+    // In case of graceful dispose, uncomment the following lines
+    /*
     Dispose_USB();
+    Dispose_CAN();
+    */
 }
 
-/*!
- * @brief Application entry point.
- */
 int main(void)
 {
-    /* Init board hardware. */
+    // Initialize board hardware
     BOARD_InitPins();
     BOARD_BootClockRUN();
     BOARD_InitDebugConsole();
-
-    PRINTF("FreeRTOS LPSPI example start.\r\n");
-    PRINTF("This example use one lpspi instance as master and another as slave on a single board.\r\n");
-    PRINTF("Master and slave are both use interrupt way.\r\n");
-    PRINTF("Please make sure you make the correct line connection. Basically, the connection is:\r\n");
-    PRINTF("LPSPI_master -- LPSPI_slave\r\n");
-    PRINTF("    CLK      --    CLK\r\n");
-    PRINTF("    PCS      --    PCS\r\n");
-    PRINTF("    SOUT     --    SIN\r\n");
-    PRINTF("    SIN      --    SOUT\r\n");
-    PRINTF("\r\n");
 
     int successful = Initialize_CAN();
     if (successful != 0)
@@ -159,15 +109,15 @@ int main(void)
         vTaskSuspend(NULL);
     }
 
-    if (xTaskCreate(APPTask,                         /* pointer to the task                      */
-                    s_appName,                       /* task name for kernel awareness debugging */
-                    5000L / sizeof(portSTACK_TYPE),  /* task stack size                          */
-                    NULL,                      /* optional task startup argument           */
-                    4,                               /* initial priority                         */
-                    NULL /* optional task handle to create           */
+    if (xTaskCreate(main_Task,
+    				MAIN_TASK_NAME,
+                    TASK_STACK_SIZE,
+                    NULL,
+					MAIN_TASK_PRIORITY,
+                    NULL
                     ) != pdPASS)
     {
-        usb_echo("app task create failed!\r\n");
+        usb_echo("Main task creation failed!\r\n");
 
         return 1;
     }
