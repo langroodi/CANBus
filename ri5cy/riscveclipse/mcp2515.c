@@ -24,9 +24,10 @@ int Set_BaudRate(void)
 	const size_t DATA_OFFSET_CNF2 =  (size_t)(DATA_OFFSET_CNF3 + 1);
 	const size_t DATA_OFFSET_CNF1 =  (size_t)(DATA_OFFSET_CNF2 + 1);
 
-	const uint8_t DATA_CNF3 = 0x86U;
-	const uint8_t DATA_CNF2 = 0xB4U;
-	const uint8_t DATA_CNF1 = 0x03U;
+	// 5 kbps CAN bus speed with 8MHx xtal
+	const uint8_t DATA_CNF3 = 0x87U;
+	const uint8_t DATA_CNF2 = 0xbfU;
+	const uint8_t DATA_CNF1 = 0x1fU;
 
 	uint8_t tx_buffer[BUFFER_SIZE];
 	// [Instruction][Address Byte][CNF3][CNF2][CNF1]
